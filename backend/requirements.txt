@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+python-dotenv
+httpx
+python-multipart
+fpdf2
+python-docx
+watchfiles
