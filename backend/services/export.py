@@ -15,6 +15,7 @@ OUTPUTS_DIR = os.path.join(os.path.dirname(__file__), "..", "outputs")
 # MAIN EXPORT FUNCTION
 # ─────────────────────────────────────────────
 def export_documents(mom_json: dict, session_id: str) -> tuple:
+
     os.makedirs(OUTPUTS_DIR, exist_ok=True)
 
     raw_title = (
@@ -28,7 +29,11 @@ def export_documents(mom_json: dict, session_id: str) -> tuple:
     clean_name = clean_name[:60]
 
     filename = f"{clean_name}_{session_id[:8]}"
-    docx_path = os.path.join(OUTPUTS_DIR, f"{filename}.docx")
+
+    docx_path = os.path.join(
+        OUTPUTS_DIR,
+        f"{filename}.docx"
+    )
 
     _generate_docx(mom_json, docx_path)
 
@@ -54,23 +59,30 @@ def _generate_docx(data: dict, path: str):
     footer = section.footer
     footer_para = footer.paragraphs[0]
     footer_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
     _add_page_number(footer_para)
 
-    # HEADER TITLE
+    # ─────────────────────────────────────────
+    # HEADER TEXT
+    # ─────────────────────────────────────────
     dept_para = doc.add_paragraph()
     dept_para.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
     run = dept_para.add_run(
         "Department : CSE\nNandha Engineering College"
     )
+
     run.bold = True
     run.font.size = Pt(10)
 
+    # ─────────────────────────────────────────
     # HEADER TABLE
+    # ─────────────────────────────────────────
     table = doc.add_table(rows=3, cols=6)
     table.style = "Table Grid"
 
     def set_cell(r, c, text, bold=False, center=False):
+
         cell = table.cell(r, c)
         cell.text = str(text)
 
@@ -133,15 +145,18 @@ def _generate_docx(data: dict, path: str):
     # ROW 3
     set_cell(2, 0, "Members Present", True)
 
-    members_cell = table.cell(2, 1).merge(table.cell(2, 5))
+    members_cell = table.cell(2, 1).merge(
+        table.cell(2, 5)
+    )
 
     participants = data.get("participants") or []
 
-    # FIXED NoneType issue
     if isinstance(participants, list) and participants:
+
         members_cell.text = ", ".join(
             [str(p) for p in participants if p]
         )
+
     else:
         members_cell.text = "HoD and All faculty members"
 
@@ -149,18 +164,25 @@ def _generate_docx(data: dict, path: str):
 
     doc.add_paragraph()
 
+    # ─────────────────────────────────────────
     # TITLE
+    # ─────────────────────────────────────────
     title_para = doc.add_paragraph()
     title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    run = title_para.add_run("Minutes of the Meeting")
+    run = title_para.add_run(
+        "Minutes of the Meeting"
+    )
+
     run.bold = True
     run.font.size = Pt(12)
     run.underline = True
 
     doc.add_paragraph()
 
-    # MAIN MOM TABLE
+    # ─────────────────────────────────────────
+    # MAIN TABLE
+    # ─────────────────────────────────────────
     mom_table = doc.add_table(rows=1, cols=4)
     mom_table.style = "Table Grid"
 
@@ -174,6 +196,7 @@ def _generate_docx(data: dict, path: str):
     hdr_cells = mom_table.rows[0].cells
 
     for i, h in enumerate(headers):
+
         hdr_cells[i].text = h
 
         para = hdr_cells[i].paragraphs[0]
@@ -183,27 +206,40 @@ def _generate_docx(data: dict, path: str):
         run.bold = True
         run.font.size = Pt(10)
 
-        _set_cell_background(hdr_cells[i], "D9D9D9")
+        _set_cell_background(
+            hdr_cells[i],
+            "D9D9D9"
+        )
 
-    # DYNAMIC CATEGORY SECTION
+    # ─────────────────────────────────────────
+    # CATEGORY SECTION
+    # ─────────────────────────────────────────
     categories = data.get("categories") or []
 
-    # fallback
+    # AUTO CONVERT
     if not categories:
+
+        fallback_points = (
+            data.get("key_takeaways")
+            or data.get("information_items")
+            or []
+        )
+
+        if not isinstance(fallback_points, list):
+            fallback_points = [str(fallback_points)]
+
         categories = [
             {
-                "name": "General Discussion",
-                "points": [
-                    "Meeting discussion points were reviewed."
-                ],
+                "name": "Meeting Discussion",
+                "points": fallback_points,
                 "responsibility": "All",
                 "target_date": "Continuous"
             }
         ]
 
+    # CREATE ROWS
     for idx, cat in enumerate(categories, start=1):
 
-        # FIX None categories
         if not isinstance(cat, dict):
             continue
 
@@ -212,11 +248,18 @@ def _generate_docx(data: dict, path: str):
         # CATEGORY
         category_cell = row.cells[0]
 
-        category_name = f"{idx}. {cat.get('name') or 'General'}"
+        category_name = (
+            f"{idx}. "
+            f"{cat.get('name') or 'General'}"
+        )
 
         category_cell.text = category_name
 
-        cat_run = category_cell.paragraphs[0].runs[0]
+        cat_run = (
+            category_cell.paragraphs[0]
+            .runs[0]
+        )
+
         cat_run.bold = True
         cat_run.font.size = Pt(9)
 
@@ -225,7 +268,6 @@ def _generate_docx(data: dict, path: str):
 
         points = cat.get("points") or []
 
-        # FIX None points
         if not isinstance(points, list):
             points = [str(points)]
 
@@ -234,7 +276,10 @@ def _generate_docx(data: dict, path: str):
             first_para = points_cell.paragraphs[0]
             first_para.style = "List Bullet"
 
-            first_run = first_para.add_run(str(points[0]))
+            first_run = first_para.add_run(
+                str(points[0])
+            )
+
             first_run.font.size = Pt(9)
 
             for p_text in points[1:]:
@@ -247,17 +292,24 @@ def _generate_docx(data: dict, path: str):
                 r.font.size = Pt(9)
 
         else:
-            points_cell.text = "Discussion conducted."
+
+            points_cell.text = (
+                "Discussion conducted."
+            )
 
         # RESPONSIBILITY
         res_cell = row.cells[2]
 
         res_cell.text = str(
-            cat.get("responsibility") or "All"
+            cat.get("responsibility")
+            or "All"
         )
 
         res_para = res_cell.paragraphs[0]
-        res_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        res_para.alignment = (
+            WD_ALIGN_PARAGRAPH.CENTER
+        )
 
         res_para.runs[0].font.size = Pt(9)
 
@@ -265,20 +317,29 @@ def _generate_docx(data: dict, path: str):
         td_cell = row.cells[3]
 
         td_cell.text = str(
-            cat.get("target_date") or "Continuous"
+            cat.get("target_date")
+            or "Continuous"
         )
 
         td_para = td_cell.paragraphs[0]
-        td_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        td_para.alignment = (
+            WD_ALIGN_PARAGRAPH.CENTER
+        )
 
         td_para.runs[0].font.size = Pt(9)
 
     doc.add_paragraph()
 
+    # ─────────────────────────────────────────
     # INFORMATION ITEMS
+    # ─────────────────────────────────────────
     info_para = doc.add_paragraph()
 
-    run = info_para.add_run("Information Items")
+    run = info_para.add_run(
+        "Information Items"
+    )
+
     run.bold = True
     run.font.size = Pt(11)
     run.underline = True
@@ -289,11 +350,11 @@ def _generate_docx(data: dict, path: str):
         or []
     )
 
-    # FIX NoneType issue
     if not isinstance(info_items, list):
         info_items = [str(info_items)]
 
     if not info_items:
+
         info_items = [
             "Faculty members are requested to complete pending work.",
             "Upcoming activities will be communicated shortly.",
@@ -302,29 +363,38 @@ def _generate_docx(data: dict, path: str):
 
     for item in info_items:
 
-        p = doc.add_paragraph(style="List Bullet")
+        p = doc.add_paragraph(
+            style="List Bullet"
+        )
 
         r = p.add_run(str(item))
         r.font.size = Pt(9)
 
-    # SAVE DOCX
+    # ─────────────────────────────────────────
+    # SAVE
+    # ─────────────────────────────────────────
     try:
+
         doc.save(path)
+
         print("✅ DOCX saved:", path)
 
     except Exception as e:
+
         print("❌ DOCX save failed:", e)
+
         raise
 
 
 # ─────────────────────────────────────────────
-# CELL BACKGROUND COLOR
+# CELL BACKGROUND
 # ─────────────────────────────────────────────
 def _set_cell_background(cell, color):
 
     tc_pr = cell._tc.get_or_add_tcPr()
 
     shd = OxmlElement("w:shd")
+
     shd.set(qn("w:fill"), color)
 
     tc_pr.append(shd)
@@ -337,38 +407,74 @@ def _add_page_number(paragraph):
 
     paragraph.add_run("Page ")
 
-    # Field: PAGE
+    # PAGE
     run = paragraph.add_run()
+
     fld_begin = OxmlElement("w:fldChar")
-    fld_begin.set(qn("w:fldCharType"), "begin")
+    fld_begin.set(
+        qn("w:fldCharType"),
+        "begin"
+    )
+
     run._r.append(fld_begin)
 
     run = paragraph.add_run()
+
     instr = OxmlElement("w:instrText")
-    instr.set(qn("xml:space"), "preserve")
+    instr.set(
+        qn("xml:space"),
+        "preserve"
+    )
+
     instr.text = "PAGE"
+
     run._r.append(instr)
 
     run = paragraph.add_run()
+
     fld_end = OxmlElement("w:fldChar")
-    fld_end.set(qn("w:fldCharType"), "end")
+
+    fld_end.set(
+        qn("w:fldCharType"),
+        "end"
+    )
+
     run._r.append(fld_end)
 
     paragraph.add_run(" of ")
 
-    # Field: NUMPAGES
+    # NUMPAGES
     run = paragraph.add_run()
+
     fld_begin2 = OxmlElement("w:fldChar")
-    fld_begin2.set(qn("w:fldCharType"), "begin")
+
+    fld_begin2.set(
+        qn("w:fldCharType"),
+        "begin"
+    )
+
     run._r.append(fld_begin2)
 
     run = paragraph.add_run()
+
     instr2 = OxmlElement("w:instrText")
-    instr2.set(qn("xml:space"), "preserve")
+
+    instr2.set(
+        qn("xml:space"),
+        "preserve"
+    )
+
     instr2.text = "NUMPAGES"
+
     run._r.append(instr2)
 
     run = paragraph.add_run()
+
     fld_end2 = OxmlElement("w:fldChar")
-    fld_end2.set(qn("w:fldCharType"), "end")
+
+    fld_end2.set(
+        qn("w:fldCharType"),
+        "end"
+    )
+
     run._r.append(fld_end2)
