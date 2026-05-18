@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NoteCraft — Status</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0a0a0f;
+      --bg-card: rgba(26, 26, 46, 0.7);
+      --accent-primary: #6366f1;
+      --accent-secondary: #a855f7;
+      --text-primary: #ffffff;
+      --text-secondary: #94a3b8;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-main);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.1) 0px, transparent 50%);
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      padding: 24px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 48px 40px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 40px;
+      opacity: 0.6;
+    }
+
+    .logo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    }
+
+    .logo-text {
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .state { display: none; }
+    .state.active { display: block; }
+
+    .spinner-wrapper {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 32px;
+    }
+
+    .spinner {
+      width: 100%;
+      height: 100%;
+      border: 3px solid rgba(99, 102, 241, 0.1);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--success);
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    h1 {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .btn-download {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 16px;
+      border: none;
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-close {
+      display: inline-block;
+      width: 100%;
+      padding: 14px 24px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .error-msg {
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      <span class="logo-text">NoteCraft Engine</span>
+    </div>
+
+    <div id="state-processing" class="state active">
+      <div class="spinner-wrapper">
+        <div class="spinner"></div>
+      </div>
+      <h1 id="status-title">Orchestrating Notes</h1>
+      <p id="status-desc">Analyzing your meeting audio and synthesizing insights through AI. This will only take a moment.</p>
+    </div>
+
+    <div id="state-ready" class="state">
+      <div class="success-icon">✓</div>
+      <h1>Your Notes are Ready</h1>
+      <p>High-quality meeting notes have been generated and are ready for professional use.</p>
+      <div id="download-area"></div>
+    </div>
+
+    <button class="btn-close" onclick="window.close()">Dismiss Window</button>
+  </div>
+
+  <script>
+    const BACKEND_URL = "http://localhost:8000";
+    const params      = new URLSearchParams(window.location.search);
+    const sessionId   = params.get("session");
+    
+    const states = {
+      processing: document.getElementById("state-processing"),
+      ready:      document.getElementById("state-ready")
+    };
+
+    const statusTitle = document.getElementById("status-title");
+    const statusDesc  = document.getElementById("status-desc");
+    const downloadArea = document.getElementById("download-area");
+
+    const messages = [
+      { delay: 0,     title: "Analyzing Audio",    desc: "Mapping speakers and transcribing the dialogue..." },
+      { delay: 8000,  title: "Synthesizing AI",    desc: "Identifying key discussion points and action items..." },
+      { delay: 18000, title: "Crafting Document",  desc: "Structuring your notes into a professional format..." },
+      { delay: 40000, title: "Finishing Up",       desc: "Finalizing the DOCX file for download..." }
+    ];
+
+    function showState(name) {
+      Object.values(states).forEach(el => el.classList.remove("active"));
+      states[name].classList.add("active");
+    }
+
+    async function pollStatus() {
+      // 1. Direct DOCX mode
+      const directDocx = params.get("docx");
+      if (directDocx) {
+        showState("ready");
+        renderDownloadButton(decodeURIComponent(directDocx));
+        return;
+      }
+
+      // 2. Session ID mode
+      if (!sessionId) {
+        statusTitle.textContent = "Error";
+        statusDesc.textContent = "No session ID found.";
+        return;
+      }
+
+      messages.forEach(({ delay, title, desc }) => {
+        setTimeout(() => {
+          if (states.processing.classList.contains("active")) {
+            statusTitle.textContent = title;
+            statusDesc.textContent  = desc;
+          }
+        }, delay);
+      });
+
+      const interval = setInterval(async () => {
+        try {
+          const res  = await fetch(`${BACKEND_URL}/status?session_id=${sessionId}`);
+          if (!res.ok) return;
+          
+          const data = await res.json();
+          if (data.status === "ready") {
+            clearInterval(interval);
+            const docxUrl = data.docx_url ? `${BACKEND_URL}${data.docx_url}` : "";
+            showState("ready");
+            renderDownloadButton(docxUrl);
+          } else if (data.status === "failed") {
+            clearInterval(interval);
+            statusTitle.textContent = "Action Required";
+            statusDesc.innerHTML = `<div class="error-msg">Something went wrong while crafting your notes.</div>`;
+          }
+        } catch (err) {
+          console.error("Polling error:", err);
+        }
+      }, 2000);
+    }
+
+    function renderDownloadButton(url) {
+      if (!url) {
+        downloadArea.innerHTML = `<div class="error-msg">Unable to locate the generated document.</div>`;
+        return;
+      }
+      const link = document.createElement("a");
+      link.href = url;
+      link.className = "btn-download";
+      link.innerHTML = "<span>⬇</span> Download DOCX";
+      link.target = "_blank";
+      downloadArea.appendChild(link);
+    }
+
+    pollStatus();
+  </script>
+</body>
+</html>
