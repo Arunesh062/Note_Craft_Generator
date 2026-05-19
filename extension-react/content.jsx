@@ -203,6 +203,29 @@ import styles from './src/styles/global.css?inline';
   // Local event listeners for React UI communication (from Widget)
   window.addEventListener('nc-start-recording', startRecording);
   window.addEventListener('nc-stop-recording', stopRecording);
+  window.addEventListener('nc-session-reset', () => {
+    isRecording = false;
+    currentSession = null;
+    chunkIndex = 0;
+    if (chunkInterval) {
+      clearInterval(chunkInterval);
+      chunkInterval = null;
+    }
+    recordingStart = null;
+    if (audioCtx && audioCtx.state !== 'closed') {
+      audioCtx.close().catch(() => {});
+    }
+    audioCtx = null;
+    [micStream, tabStream].forEach(s => s?.getTracks().forEach(t => t.stop()));
+    micStream = null;
+    tabStream = null;
+    audioStream = null;
+    mediaRecorder = null;
+    speakerTimeline = [];
+    participants = [];
+    lastSpeaker = null;
+    console.log('🔄 NoteCraft Session fully reset');
+  });
 
   // Also handle direct calls if React is in the same bundle
   // (Since we are importing App here, we can use a bridge)

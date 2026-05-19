@@ -37,14 +37,25 @@ function safePos(pos) {
   return { top, left };
 }
 
+const mapStateToScreen = (state) => {
+  if (!state) return 'start';
+  if (state === 'idle') return 'start';
+  if (state === 'ready') return 'complete';
+  return state;
+};
+
 /* ── component ────────────────────────────────────────────────── */
 
 const App = ({ mode = 'popup' }) => {
   /* ── state ── */
-  const [status,         setStatus]         = useState('idle');   // idle | recording | processing | ready
+  const [screen,         setScreen]         = useState('start');   // start | recording | processing | complete
+  const [timer,          setTimer]          = useState('00:00');
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isMinimized,    setIsMinimized]    = useState(false);
   const [position,       setPosition]       = useState(DEFAULT_POS);
+  const [sessionId,      setSessionId]      = useState(null);
+  const [transcript,     setTranscript]     = useState('');
+  const [downloadUrl,    setDownloadUrl]    = useState('');
 
   /* ── refs (immune to render cycles) ── */
   const posRef       = useRef(DEFAULT_POS); // always reflects latest position
@@ -56,16 +67,33 @@ const App = ({ mode = 'popup' }) => {
   useEffect(() => { posRef.current    = position;    }, [position]);
   useEffect(() => { isMinRef.current  = isMinimized; }, [isMinimized]);
 
+  // Console logs for debugging as requested
+  console.log("Current screen:", screen);
+  console.log("Rendering screen:", screen);
+
+  /* ── format ── */
+  const formatTime = (s) => {
+    const h = String(Math.floor(s / 3600)).padStart(2, '0');
+    const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+    const sec = String(s % 60).padStart(2, '0');
+    return mode === 'popup' ? `${h}:${m}:${sec}` : `${m}:${sec}`;
+  };
+
   /* ── Chrome Storage sync ── */
   useEffect(() => {
     if (typeof chrome === 'undefined' || !chrome?.storage?.local) return;
 
     chrome.storage.local.get(
-      ['currentState', 'elapsedSeconds', 'nc_minimized', 'nc_pos'],
+      ['currentState', 'elapsedSeconds', 'nc_minimized', 'nc_pos', 'currentSession', 'transcript', 'downloadUrl'],
       (data) => {
-        if (data.currentState)               setStatus(data.currentState);
-        if (typeof data.elapsedSeconds === 'number') setElapsedSeconds(data.elapsedSeconds);
-        if (typeof data.nc_minimized   === 'boolean') setIsMinimized(data.nc_minimized);
+        setScreen(mapStateToScreen(data.currentState));
+        const sec = data.elapsedSeconds || 0;
+        setElapsedSeconds(sec);
+        setTimer(formatTime(sec));
+        setIsMinimized(data.nc_minimized || false);
+        setSessionId(data.currentSession || null);
+        setTranscript(data.transcript || '');
+        setDownloadUrl(data.downloadUrl || '');
         // Always validate the stored position
         if (data.nc_pos) {
           const p = safePos(data.nc_pos);
@@ -76,8 +104,26 @@ const App = ({ mode = 'popup' }) => {
     );
 
     const onStorageChange = (changes) => {
-      if (changes.currentState) setStatus(changes.currentState.newValue);
-      if (changes.nc_minimized) setIsMinimized(Boolean(changes.nc_minimized.newValue));
+      if (changes.currentState) {
+        setScreen(mapStateToScreen(changes.currentState.newValue));
+      }
+      if (changes.elapsedSeconds) {
+        const sec = changes.elapsedSeconds.newValue || 0;
+        setElapsedSeconds(sec);
+        setTimer(formatTime(sec));
+      }
+      if (changes.nc_minimized) {
+        setIsMinimized(changes.nc_minimized.newValue !== undefined ? Boolean(changes.nc_minimized.newValue) : false);
+      }
+      if (changes.currentSession) {
+        setSessionId(changes.currentSession.newValue || null);
+      }
+      if (changes.transcript) {
+        setTranscript(changes.transcript.newValue || '');
+      }
+      if (changes.downloadUrl) {
+        setDownloadUrl(changes.downloadUrl.newValue || '');
+      }
       if (changes.nc_pos) {
         const p = safePos(changes.nc_pos.newValue);
         posRef.current = p;
@@ -91,25 +137,26 @@ const App = ({ mode = 'popup' }) => {
 
   /* ── timer ── */
   useEffect(() => {
-    if (status === 'recording') {
+    if (screen === 'recording') {
       timerRef.current = setInterval(
-        () => setElapsedSeconds(prev => prev + 1),
+        () => {
+          setElapsedSeconds(prev => {
+            const next = prev + 1;
+            setTimer(formatTime(next));
+            return next;
+          });
+        },
         1000
       );
     } else {
       clearInterval(timerRef.current);
-      if (status === 'idle') setElapsedSeconds(0);
+      if (screen === 'start' || screen === 'idle') {
+        setElapsedSeconds(0);
+        setTimer("00:00");
+      }
     }
     return () => clearInterval(timerRef.current);
-  }, [status]);
-
-  /* ── format ── */
-  const formatTime = (s) => {
-    const h = String(Math.floor(s / 3600)).padStart(2, '0');
-    const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
-    const sec = String(s % 60).padStart(2, '0');
-    return mode === 'popup' ? `${h}:${m}:${sec}` : `${m}:${sec}`;
-  };
+  }, [screen]);
 
   /* ── recording actions ── */
   const handleStart = () => {
@@ -120,7 +167,7 @@ const App = ({ mode = 'popup' }) => {
     } else {
       window.dispatchEvent(new CustomEvent('nc-start-recording'));
     }
-    setStatus('recording');
+    setScreen('recording');
   };
 
   const handleStop = () => {
@@ -131,7 +178,7 @@ const App = ({ mode = 'popup' }) => {
     } else {
       window.dispatchEvent(new CustomEvent('nc-stop-recording'));
     }
-    setStatus('processing');
+    setScreen('processing');
   };
 
   const handleDownload = () => {
@@ -140,10 +187,39 @@ const App = ({ mode = 'popup' }) => {
     });
   };
 
-  const handleReset = () => {
-    chrome.storage.local.clear();
-    setStatus('idle');
-    setElapsedSeconds(0);
+  /**
+   * Reusable function to completely reset the NoteCraft session
+   * and all associated React / extension state.
+   */
+  const resetSession = () => {
+    // 1. Reset all React states instantly
+    setScreen("start");
+    setTimer("00:00");
+    setTranscript("");
+    setDownloadUrl("");
+    setSessionId(null);
+    setIsMinimized(false);
+
+    // 2. Clear session-specific storage entries (preserving layout/position, nc_pos)
+    if (typeof chrome !== 'undefined' && chrome?.storage?.local) {
+      chrome.storage.local.remove([
+        'currentState',
+        'currentSession',
+        'elapsedSeconds',
+        'transcript',
+        'downloadUrl',
+        'nc_minimized'
+      ], () => {
+        // Force state update to notify any other active contexts/listeners
+        chrome.storage.local.set({
+          currentState: 'idle',
+          nc_minimized: false
+        });
+      });
+    }
+
+    // 3. Notify the content script or other local scripts to completely tear down active session
+    window.dispatchEvent(new CustomEvent('nc-session-reset'));
   };
 
   /* ── toggle minimise ──
@@ -215,6 +291,8 @@ const App = ({ mode = 'popup' }) => {
     ? { position: 'fixed', top: pos.top, left: pos.left, zIndex: 2147483647 }
     : {};
 
+  const isRecordingScreen = screen === 'recording';
+
   /* ════════════════════════════════════════════════════════════
      RENDER — single tree, both FAB and card always in the DOM.
      CSS class drives which one is visible.
@@ -226,8 +304,8 @@ const App = ({ mode = 'popup' }) => {
         <div
           className={[
             'nc-fab',
-            isMinimized           ? 'nc-fab--visible'    : 'nc-fab--hidden',
-            status === 'recording' ? 'nc-fab--recording' : '',
+            isMinimized        ? 'nc-fab--visible'    : 'nc-fab--hidden',
+            isRecordingScreen  ? 'nc-fab--recording' : '',
           ].join(' ')}
           style={{ top: pos.top, left: pos.left }}
           onMouseDown={fabDragHandler}
@@ -235,17 +313,18 @@ const App = ({ mode = 'popup' }) => {
           title="Expand NoteCraft"
           aria-label="NoteCraft AI — click to expand"
         >
-          {status === 'recording' && <div className="nc-fab-ring" />}
+          {isRecordingScreen && <div className="nc-fab-ring" />}
           <div className="nc-fab-dot" />
-          <span className="nc-fab-timer">{formatTime(elapsedSeconds)}</span>
+          <span className="nc-fab-timer">{timer}</span>
         </div>
       )}
 
       {/* ── EXPANDED WIDGET CARD ─────────────────────────────── */}
       <div
+        key={screen}
         className={[
           'nc-widget',
-          status === 'recording'                      ? 'recording'    : '',
+          isRecordingScreen                           ? 'recording'    : '',
           mode === 'widget' && isMinimized            ? 'nc-widget--hidden' : '',
         ].join(' ')}
         style={widgetStyle}
@@ -272,9 +351,9 @@ const App = ({ mode = 'popup' }) => {
           </div>
         </div>
 
-        {/* Body */}
+        {/* Body with guaranteed fallbacks to prevent empty/blank states */}
         <div className="nc-body">
-          {status === 'idle' && (
+          {(screen === 'start' || screen === 'idle' || !['recording', 'processing', 'complete', 'ready'].includes(screen)) && (
             <div className="nc-content">
               <p className="nc-status">Ready to capture your meeting insights.</p>
               <button onClick={handleStart} className="nc-btn nc-btn-primary">
@@ -283,17 +362,17 @@ const App = ({ mode = 'popup' }) => {
             </div>
           )}
 
-          {status === 'recording' && (
+          {screen === 'recording' && (
             <div className="nc-content">
               <div className="nc-recording-badge">● Live Recording</div>
-              <div className="nc-timer">{formatTime(elapsedSeconds)}</div>
+              <div className="nc-timer">{timer}</div>
               <button onClick={handleStop} className="nc-btn nc-btn-danger">
                 <Square size={16} /> Stop Meeting
               </button>
             </div>
           )}
 
-          {status === 'processing' && (
+          {screen === 'processing' && (
             <div className="nc-content">
               <p className="nc-title-text">Orchestrating Notes</p>
               <div className="nc-progress-container">
@@ -306,13 +385,13 @@ const App = ({ mode = 'popup' }) => {
             </div>
           )}
 
-          {status === 'ready' && (
+          {(screen === 'complete' || screen === 'ready') && (
             <div className="nc-content">
               <p className="nc-title-text" style={{ color: '#10b981' }}>✓ Notes Ready!</p>
               <button onClick={handleDownload} className="nc-btn nc-btn-success">
                 <Download size={16} /> Download DOCX
               </button>
-              <button onClick={handleReset} className="nc-btn nc-btn-ghost">
+              <button onClick={resetSession} className="nc-btn nc-btn-ghost">
                 <RefreshCw size={14} /> New Session
               </button>
             </div>

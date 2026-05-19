@@ -6,9 +6,9 @@
 
 /* ── Design Tokens ────────────────────────────────────────── */
 :root {
-  --nc-bg-card:      #0f1117;
-  --nc-bg-header:    #161c2d;
-  --nc-bg-body:      #111827;
+  --nc-bg-card:      #0f172a;
+  --nc-bg-header:    #1e293b;
+  --nc-bg-body:      #0f172a;
   --nc-border:       #1e293b;
   --nc-text:         #f1f5f9;
   --nc-muted:        #64748b;
@@ -20,7 +20,7 @@
   --nc-success:      #10b981;
   --nc-r-card:       14px;
   --nc-r-btn:        8px;
-  --nc-shadow:       0 20px 60px rgba(0,0,0,.7), 0 4px 16px rgba(0,0,0,.5);
+  --nc-shadow:       0 10px 30px rgba(0,0,0,0.4);
   --nc-fab-sz:       68px;
 }
 
@@ -44,27 +44,27 @@
 ════════════════════════════════════════════════════════════ */
 .nc-widget {
   width: 292px;
-  background: var(--nc-bg-card);
-  border: 1px solid var(--nc-border);
-  border-radius: var(--nc-r-card);
-  box-shadow: var(--nc-shadow);
+  background: var(--nc-bg-card) !important;
+  border: 1px solid var(--nc-border) !important;
+  border-radius: var(--nc-r-card) !important;
+  box-shadow: var(--nc-shadow) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: box-shadow .25s ease, opacity .2s ease, transform .2s ease;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+  transition: box-shadow .25s ease, transform .2s ease;
   /* z-index set inline from JS */
 }
 
 /* Hide card when minimised in widget mode */
 .nc-widget--hidden {
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.85);
+  display: none !important;
 }
 
 .nc-widget:not(.nc-widget--hidden):hover {
-  box-shadow: 0 24px 64px rgba(0,0,0,.85),
-              0 6px 20px rgba(99,102,241,.18);
+  box-shadow: var(--nc-shadow) !important;
 }
 
 /* ── Header ─────────────────────────────────────────────── */
@@ -73,10 +73,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 11px 14px;
-  background: var(--nc-bg-header);
-  border-bottom: 1px solid var(--nc-border);
+  background: var(--nc-bg-header) !important;
+  border-bottom: 1px solid var(--nc-border) !important;
   cursor: grab;
   flex-shrink: 0;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  filter: none !important;
 }
 .nc-header:active { cursor: grabbing; }
 
@@ -126,14 +129,17 @@
   transition: background .15s, color .15s;
 }
 .nc-action-btn:hover {
-  background: rgba(99,102,241,.15);
-  color: var(--nc-text);
+  background: #334155 !important;
+  color: var(--nc-text) !important;
 }
 
 /* ── Body ───────────────────────────────────────────────── */
 .nc-body {
   padding: 18px 16px 20px;
-  background: var(--nc-bg-body);
+  background: var(--nc-bg-body) !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  filter: none !important;
 }
 
 .nc-content {
@@ -209,8 +215,8 @@
   color: var(--nc-muted);
 }
 .nc-btn-ghost:hover {
-  background: rgba(255,255,255,.04);
-  color: var(--nc-text);
+  background: #1e293b !important;
+  color: var(--nc-text) !important;
 }
 
 /* ── Recording UI ───────────────────────────────────────── */
@@ -219,14 +225,15 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: rgba(239,68,68,.12);
-  border: 1px solid rgba(239,68,68,.3);
+  background: #2d161a !important;
+  border: 1px solid #ef4444 !important;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 600;
-  color: var(--nc-danger);
+  color: var(--nc-danger) !important;
   letter-spacing: .05em;
   text-transform: uppercase;
+  opacity: 1 !important;
 }
 
 .nc-timer {
@@ -243,7 +250,7 @@
 
 .nc-progress-bar {
   height: 3px;
-  background: rgba(255,255,255,.06);
+  background: #1e293b !important;
   border-radius: 2px;
   overflow: hidden;
   margin: 6px 0;
@@ -276,12 +283,10 @@
   height: var(--nc-fab-sz);
   border-radius: 50%;
 
-  /* Vivid solid gradient — zero transparency */
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 55%, #a78bfa 100%);
-
-  box-shadow:
-    0 8px 32px rgba(99,102,241,.6),
-    0 2px 8px  rgba(0,0,0,.65);
+  /* Solid dark navy background with solid border and clean shadow */
+  background: var(--nc-bg-card) !important;
+  border: 1px solid var(--nc-border) !important;
+  box-shadow: var(--nc-shadow) !important;
 
   display: flex;
   flex-direction: column;
@@ -290,12 +295,9 @@
   gap: 4px;
 
   cursor: move;
-
-  /* Visibility transition */
-  transition:
-    opacity .2s ease,
-    transform .25s cubic-bezier(.34,1.56,.64,1),
-    box-shadow .2s ease;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  filter: none !important;
 
   /* Allow the pulsing ring to overflow the circle */
   overflow: visible;
@@ -303,23 +305,18 @@
 
 /* ── Visibility states ────────────────────────────────── */
 .nc-fab--hidden {
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.7);
+  display: none !important;
 }
 
 .nc-fab--visible {
-  opacity: 1;
+  display: flex !important;
   pointer-events: auto;
-  transform: scale(1);
 }
 
 /* ── Hover (only when visible) ────────────────────────── */
 .nc-fab--visible:hover {
-  transform: scale(1.1);
-  box-shadow:
-    0 12px 40px rgba(99,102,241,.75),
-    0 4px 12px  rgba(0,0,0,.7);
+  transform: scale(1.05) !important;
+  box-shadow: var(--nc-shadow) !important;
 }
 
 .nc-fab--visible:active {
@@ -336,7 +333,7 @@
   right:  -6px;
   bottom: -6px;
   border-radius: 50%;
-  border: 2.5px solid rgba(239,68,68,.75);
+  border: 2.5px solid #ef4444 !important;
   animation: nc-ring 1.4s ease-out infinite;
   pointer-events: none;
 }
@@ -346,14 +343,14 @@
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: rgba(255,255,255,.95);
-  box-shadow: 0 0 8px rgba(255,255,255,.5);
+  background: #ffffff !important;
+  box-shadow: none !important;
   flex-shrink: 0;
 }
 
 .nc-fab--recording .nc-fab-dot {
-  background: #ef4444;
-  box-shadow: 0 0 10px rgba(239,68,68,.8);
+  background: #ef4444 !important;
+  box-shadow: none !important;
   animation: nc-pulse 1.4s ease-in-out infinite;
 }
 
@@ -361,12 +358,12 @@
 .nc-fab-timer {
   font-size: 11px;
   font-weight: 700;
-  color: rgba(255,255,255,.95);
+  color: #ffffff !important;
   font-variant-numeric: tabular-nums;
   font-family: 'SF Mono', 'Fira Code', 'Roboto Mono', monospace;
   letter-spacing: .03em;
   line-height: 1;
-  text-shadow: 0 1px 4px rgba(0,0,0,.5);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
 
 /* ── Keyframes ────────────────────────────────────────── */
