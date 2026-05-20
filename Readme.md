@@ -1,237 +1,110 @@
-# NoteCraft Generator
+# 🎙️ NoteCraft AI
+### *Intelligence-Driven Minutes of Meeting (MoM) & Class Notes Generator*
 
-Automatically generate **Smart Class Notes** and **Minutes of Meeting** from Google Meet, Zoom, or Microsoft Teams using a Chrome Extension and an AI-powered Python backend.
+[![Version](https://img.shields.io/badge/version-2.0.0-blueviolet.svg?style=for-the-badge)](https://github.com/Arunesh062/Note_Craft_Generator)
+[![React](https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-v0.100+-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![SarvamAI](https://img.shields.io/badge/AI-Sarvam--M-orange?style=for-the-badge)](https://www.sarvam.ai/)
 
----
-
-## What it does
-
-- Records your online class or meeting audio live via a Chrome extension
-- Captures participant names and active speaker timeline from the meeting DOM
-- Transcribes audio using **Sarvam AI (Saaras v2.5)**
-- Cleans, summarises, and generates structured notes using **Sarvam-M LLM**
-- Exports professional **DOCX** documents — class notes or meeting minutes
-- Sections appear **only if content exists** — no empty headings ever
-- Deletes all data after download — privacy first
-
--
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Chrome Extension | JavaScript (Manifest V3) |
-| Backend | Python, FastAPI |
-| Speech-to-Text | Sarvam Saaras v2.5 |
-| LLM | Sarvam-M |
-| DOCX Export | python-docx |
+**NoteCraft AI** is a professional-grade, automated ecosystem designed to capture, transcribe, and synthesize live audio from virtual sessions (Google Meet, Zoom, MS Teams). It transforms raw classroom or meeting dialogue into structured, institutional-standard **Minutes of Meeting (MoM)** documents using a high-performance React extension and a robust FastAPI backend.
 
 ---
 
-## Project Structure
+## ✨ Premium Experience & Features
 
+### 🎨 High-End Dark Aesthetic
+*   **Solid Neutral Design**: A transition from generic translucency to a high-contrast, premium solid dark UI optimized for professional focus.
+*   **Fluid Floating Widget**: A persistent, draggable FAB (Floating Action Button) that overlays seamlessly on active meeting tabs.
+*   **Lag-Free Interaction**: Implemented **React Reference-based dragging** that bypasses state-update cycles, ensuring 60FPS fluid UI movement even during resource-heavy video calls.
+*   **Viewport Guardians**: Advanced coordinate normalization prevents the widget from ever being lost outside the browser's viewable area.
+
+### 🎧 Precision Audio Capture
+*   **Unified Loopback**: Simultaneously captures Tab Audio (remote speakers) and Microphone Input into a single high-fidelity stream.
+*   **MV3 Compliant**: Utilizes a dedicated **Offscreen Document loopback** to maintain continuous recording under strict Chrome Manifest V3 regulations.
+*   **Async Chunking**: Audio is fragmented into 30-second segments and dispatched via background non-blocking workers for immediate processing.
+
+### 🧠 Advanced AI Synthesis
+*   **Sarvam Saaras STT**: Optimized for diverse speech profiles and accents, delivering high-accuracy transcription with minimal latency.
+*   **Map-Reduce Pipeline**: Our proprietary sequential aggregation engine handles long sessions by summarizing blocks of text, preserving context while avoiding LLM token limits.
+*   **Institutional Intelligence**: Specifically pre-configured for **Nandha Engineering College (CSE)** templates, auto-generating compliant headers, member lists, and structured action-item grids.
+
+---
+
+## 🛠️ The Tech Stack
+
+| Layer | Architecture | Core Technologies |
+| :--- | :--- | :--- |
+| **Frontend** | Browser Extension | React 18, Vite, Lucide Icons, CSS3 Variables |
+| **Backend** | Microservice API | Python 3.11+, FastAPI, Uvicorn |
+| **Processing** | Audio Signal Engine | FFmpeg (WAV/WebM Signal Processing) |
+| **Speech** | Transcription Core | Sarvam Saaras v2.5 (High-Precision STT) |
+| **Cognition** | LLM Orchestration | Sarvam-M (Map-Reduce & Refinement) |
+| **Egress** | Document Engine | `python-docx` (XML-level Document Control) |
+
+---
+
+## 📂 Project Anatomy
+
+```text
+Note_Craft_Generator/
+├── extension-react/          # Modern React Extension
+│   ├── background.js         # Service Worker & State Sync
+│   ├── offscreen.html        # Audio Stream Capture Engine
+│   └── src/
+│       ├── App.jsx           # Core Widget Logic (Drag/State/UI)
+│       └── components/       # Premium UI Modules
+└── backend/                  # FastAPI Intelligence Layer
+    ├── main.py               # API Orchestration & CORS
+    ├── routers/              # Chunks, Finalize & Status Endpoints
+    ├── services/             # STT, LLM & DOCX Export Services
+    └── outputs/              # Volatile Session Storage (Auto-Cleaned)
 ```
-notecraft-generator/
-├── .gitignore
-├── README.md
-├── extension/
-│   ├── manifest.json       # Chrome extension config + permissions
-│   ├── background.js       # Message relay service worker
-│   ├── content.js          # DOM scraping — names + active speaker
-│   ├── popup.html          # Extension UI — 5 states
-│   ├── popup.js            # UI logic + audio capture + backend polling
-│   └── popup.css           # Popup styles
-│
-└── backend/
-    ├── main.py             # FastAPI entry point
-    ├── models.py           # Pydantic request/response schemas
-    ├── .env                # SARVAM_API_KEY (never commit this)
-    ├── requirements.txt    # Python dependencies
-    ├── session/
-    │   └── store.py        # In-memory session store
-    ├── routers/
-    │   ├── chunks.py       # POST /upload-chunk
-    │   ├── finalize.py     # POST /finalize
-    │   └── status.py       # GET /status
-    ├── services/
-    │   ├── sarvam_stt.py   # Sarvam STT — audio to transcript
-    │   ├── sarvam_llm.py   # Clean + summarise + generate notes
-    │   ├── speaker_map.py  # Assign real names to transcript
-    │   └── export.py       # JSON → DOCX (conditional sections)
-    └── outputs/            # Generated files (auto-deleted after download)
-```
 
 ---
 
-## Prerequisites
+## 🚀 Setup & Installation
 
-- Python 3.11 or higher
-- Google Chrome browser
-- ffmpeg installed and added to PATH
-- Sarvam AI API key — sign up at [sarvam.ai](https://sarvam.ai)
+### 1️⃣ Prepare Environment
+*   **Node.js**: v18+ 
+*   **Python**: v3.11+
+*   **FFmpeg**: Installed and added to system `PATH`
+*   **Sarvam AI Key**: Obtain from [sarvam.ai](https://www.sarvam.ai)
 
----
-
-## Setup — Step by Step
-
-### 1. Clone the project
-
+### 2️⃣ Extension Deployment
 ```bash
-git clone https://github.com/Balahariharan003/NoteCraft-Generator.git
-cd notecraft-generator
+cd extension-react
+npm install
+npm run build
 ```
+> **Manual Step**: Go to `chrome://extensions`, enable **Developer Mode**, click **Load Unpacked**, and select the `dist` folder.
 
-### 2. Install Python dependencies
-
+### 3️⃣ Backend Activation
 ```bash
 cd backend
 pip install -r requirements.txt
-```
-
-`requirements.txt` contains:
-```
-fastapi
-uvicorn
-python-dotenv
-httpx
-python-multipart
-python-docx
-```
-
-### 3. Install ffmpeg (required for audio processing)
-
-**Windows:**
-```
-Download from https://ffmpeg.org/download.html
-Add to PATH environment variable
-```
-
-Verify:
-```bash
-ffmpeg -version
-```
-
-### 4. Add your Sarvam API key
-
-Create `backend/.env`:
-```
-SARVAM_API_KEY=your_sarvam_api_key_here
-```
-
-Get your key from the [Sarvam AI dashboard](https://sarvam.ai) after signing up. Free credits are given on signup.
-
-### 5. Start the backend server
-
-```bash
-cd backend
-uvicorn main:app --reload --port 8000
-```
-
-You should see:
-```
-INFO: Application startup complete.
-```
-
-### 6. Load the Chrome extension
-
-1. Open Chrome and go to `chrome://extensions`
-2. Enable **Developer Mode** (top right toggle)
-3. Click **Load unpacked**
-4. Select the `extension/` folder
-
-The **NoteCraft Generator** icon will appear in your Chrome toolbar.
-
----
-
-## How to Use
-
-1. Open **Google Meet**, **Zoom**, or **Microsoft Teams** in Chrome
-2. Click the **NoteCraft Generator** extension icon
-3. Click **Start Recording**
-4. Chrome shows a screen share picker:
-   - Select **Chrome Tab**
-   - Choose your **Meet tab**
-   - Tick **"Share tab audio"**
-   - Click **Share**
-5. Conduct your class or meeting normally
-6. Click **End Meeting** when done
-7. Wait ~60–90 seconds while notes are generated
-8. Click **Download DOCX**
-9. All data is automatically deleted after download
-
----
-
-## How It Works — Pipeline
-
-```
-Class/Meeting audio (every 30 seconds)
-        ↓
-POST /upload-chunk
-        ↓
-ffmpeg converts WebM → WAV (splits if > 25 seconds)
-        ↓
-Sarvam Saaras v2.5 → transcript per segment
-        ↓
-Sarvam-M → clean transcript → segment summary
-        ↓
-User clicks End Meeting
-        ↓
-POST /finalize
-        ↓
-MAP-REDUCE aggregation (Sarvam-M)
-5 chunk summaries → 1 block summary
-        ↓
-Final notes generation → structured JSON (Sarvam-M)
-        ↓
-Refinement pass (Sarvam-M)
-        ↓
-Conditional DOCX export
-Only sections with content appear
-        ↓
-Download → Auto delete all temp data
+# Create .env with SARVAM_API_KEY=your_key
+python run.py
 ```
 
 ---
 
-## Output Structure
+## 📋 Operational Workflow
 
-### Class Notes DOCX includes (only if discussed):
-
-| Section | Content |
-|---|---|
-| Session Details | Date, time, platform, instructor |
-| Session Overview | Brief summary |
-| Learning Objectives | What students should learn |
-| Topics Covered | Each topic with explanation and key points |
-| Detailed Concepts | Definition, explanation, real examples |
-| Examples Solved | Question, solution steps, answer |
-| Key Takeaways | Most important points |
-| Formulas & Definitions | Quick reference |
-| Q&A | Student questions and answers |
-| Assignments | Homework given |
-| Study Resources | Books, links, slides |
-| Additional Notes | Tips, common mistakes |
-| Revision Summary | Ultra-short recall points |
+1.  **Activate**: Ensure the backend is running on `localhost:8000`.
+2.  **Capture**: Open Google Meet, click the NoteCraft icon, and share **Tab Audio**.
+3.  **Monitor**: A floating badge tracks your time. Expand it to see live status.
+4.  **Finalize**: Click "Stop Meeting" to trigger the Map-Reduce synthesis.
+5.  **Export**: Download your professional, structured MoM as a `.docx` file.
 
 ---
 
+## 🔒 Privacy & Security
 
-## Built With
-
-- [Sarvam AI](https://sarvam.ai) — STT and LLM (Indian language support)
-- [FastAPI](https://fastapi.tiangolo.com) — Python web framework
-- [python-docx](https://python-docx.readthedocs.io) — DOCX generation
-- [ffmpeg](https://ffmpeg.org) — Audio processing
-- Chrome Extensions API (Manifest V3)
+NoteCraft AI is built with a **Privacy-First** architecture. Audio segments and transcripts are stored in volatile session memory. Once the final document is generated and downloaded, all associated session data is purged from the server, ensuring your meetings remain confidential.
 
 ---
 
-## .gitignore
-
-```
-backend/.env
-__pycache__/
-*.pyc
-.venv/
-backend/outputs/
-.DS_Store
-```
+<p align="center">
+  <i>Developed for professional excellence by the NoteCraft Team.</i><br>
+  <b>Nandha Engineering College | Department of CSE</b>
+</p>

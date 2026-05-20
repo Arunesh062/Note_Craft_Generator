@@ -5,22 +5,22 @@
 ═══════════════════════════════════════════════════════════════ */
 
 /* ── Design Tokens ────────────────────────────────────────── */
-:root {
+:root, :host {
   --nc-bg-card:      #0f172a;
   --nc-bg-header:    #1e293b;
   --nc-bg-body:      #0f172a;
   --nc-border:       #1e293b;
-  --nc-text:         #f1f5f9;
-  --nc-muted:        #64748b;
+  --nc-text:         #ffffff;
+  --nc-muted:        #94a3b8;
   --nc-accent:       #6366f1;
   --nc-accent-2:     #8b5cf6;
   --nc-accent-h:     #4f46e5;
   --nc-danger:       #ef4444;
   --nc-danger-h:     #dc2626;
   --nc-success:      #10b981;
-  --nc-r-card:       14px;
+  --nc-r-card:       12px;
   --nc-r-btn:        8px;
-  --nc-shadow:       0 10px 30px rgba(0,0,0,0.4);
+  --nc-shadow:       0 12px 40px rgba(0,0,0,0.45);
   --nc-fab-sz:       68px;
 }
 
@@ -44,7 +44,7 @@
 ════════════════════════════════════════════════════════════ */
 .nc-widget {
   width: 292px;
-  background: var(--nc-bg-card) !important;
+  background-color: var(--nc-bg-card) !important;
   border: 1px solid var(--nc-border) !important;
   border-radius: var(--nc-r-card) !important;
   box-shadow: var(--nc-shadow) !important;
@@ -53,9 +53,12 @@
   overflow: hidden;
   opacity: 1 !important;
   backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   filter: none !important;
   transition: box-shadow .25s ease, transform .2s ease;
-  /* z-index set inline from JS */
+  /* Ensure subpixel rendering is crisp */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Hide card when minimised in widget mode */
@@ -73,12 +76,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 11px 14px;
-  background: var(--nc-bg-header) !important;
+  background-color: var(--nc-bg-header) !important;
   border-bottom: 1px solid var(--nc-border) !important;
   cursor: grab;
   flex-shrink: 0;
   opacity: 1 !important;
   backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   filter: none !important;
 }
 .nc-header:active { cursor: grabbing; }
@@ -129,16 +133,17 @@
   transition: background .15s, color .15s;
 }
 .nc-action-btn:hover {
-  background: #334155 !important;
+  background-color: #334155 !important;
   color: var(--nc-text) !important;
 }
 
 /* ── Body ───────────────────────────────────────────────── */
 .nc-body {
   padding: 18px 16px 20px;
-  background: var(--nc-bg-body) !important;
+  background-color: var(--nc-bg-body) !important;
   opacity: 1 !important;
   backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   filter: none !important;
 }
 
@@ -183,29 +188,24 @@
 .nc-btn:active { transform: scale(.97); }
 
 .nc-btn-primary {
-  background: linear-gradient(135deg, var(--nc-accent), var(--nc-accent-2));
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(99,102,241,.4);
+  background-color: var(--nc-accent) !important;
+  color: #fff !important;
 }
 .nc-btn-primary:hover {
-  background: linear-gradient(135deg, var(--nc-accent-h), var(--nc-accent));
-  box-shadow: 0 6px 18px rgba(99,102,241,.55);
+  background-color: var(--nc-accent-h) !important;
 }
 
 .nc-btn-danger {
-  background: var(--nc-danger);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(239,68,68,.4);
+  background-color: var(--nc-danger) !important;
+  color: #fff !important;
 }
 .nc-btn-danger:hover {
-  background: var(--nc-danger-h);
-  box-shadow: 0 6px 16px rgba(239,68,68,.55);
+  background-color: var(--nc-danger-h) !important;
 }
 
 .nc-btn-success {
-  background: var(--nc-success);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(16,185,129,.4);
+  background-color: var(--nc-success) !important;
+  color: #fff !important;
 }
 .nc-btn-success:hover { filter: brightness(1.1); }
 
@@ -243,6 +243,7 @@
   letter-spacing: -.02em;
   color: var(--nc-text);
   font-family: 'SF Mono', 'Fira Code', 'Roboto Mono', monospace;
+  background-color: transparent !important; /* Text parent */
 }
 
 /* ── Progress bar ───────────────────────────────────────── */
@@ -284,7 +285,7 @@
   border-radius: 50%;
 
   /* Solid dark navy background with solid border and clean shadow */
-  background: var(--nc-bg-card) !important;
+  background-color: var(--nc-bg-card) !important;
   border: 1px solid var(--nc-border) !important;
   box-shadow: var(--nc-shadow) !important;
 
@@ -297,6 +298,7 @@
   cursor: move;
   opacity: 1 !important;
   backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   filter: none !important;
 
   /* Allow the pulsing ring to overflow the circle */
@@ -363,20 +365,18 @@
   font-family: 'SF Mono', 'Fira Code', 'Roboto Mono', monospace;
   letter-spacing: .03em;
   line-height: 1;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
 
 /* ── Keyframes ────────────────────────────────────────── */
 @keyframes nc-pulse {
-  0%   { transform: scale(1);    opacity: 1; }
-  50%  { transform: scale(1.3);  opacity: .55; }
-  100% { transform: scale(1);    opacity: 1; }
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 
 @keyframes nc-ring {
-  0%   { transform: scale(1);    opacity: .85; }
-  70%  { transform: scale(1.4);  opacity: 0; }
-  100% { transform: scale(1.4);  opacity: 0; }
+  0%   { transform: scale(1); }
+  100% { transform: scale(1.25); }
 }
 
 @keyframes nc-slide {

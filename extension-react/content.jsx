@@ -72,31 +72,50 @@ import styles from './src/styles/global.css?inline';
 
   // ── RECORDING LOGIC ──────────────────────────────────────────
   async function startRecording() {
-    currentSession = crypto.randomUUID();
+    // Reset any lingering variables before attempting
+    micStream = null;
+    tabStream = null;
+    audioStream = null;
+    audioCtx = null;
     chunkIndex = 0;
     speakerTimeline = [];
-    isRecording = true;
-    recordingStart = Date.now();
 
     try {
+      // 1. Wait for permissions FIRST before toggling ANY state
       micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       tabStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      
       const tabAudioTrack = tabStream.getAudioTracks()[0];
+      
+      // We don't need the video track, stop it immediately to save resources
       tabStream.getVideoTracks().forEach(t => t.stop());
 
-      if (!tabAudioTrack) throw new Error('Tab audio not shared.');
+      if (!tabAudioTrack) {
+        throw new Error('Tab audio not shared. Please ensure you select the "Share tab audio" checkbox.');
+      }
+
+      // 2. Permissions & Tracks succeeded, NOW initialize recording state
+      currentSession = crypto.randomUUID();
+      isRecording = true;
+      recordingStart = Date.now();
 
       audioCtx = new AudioContext();
       const destination = audioCtx.createMediaStreamDestination();
       audioCtx.createMediaStreamSource(new MediaStream([tabAudioTrack])).connect(destination);
       const micSource = audioCtx.createMediaStreamSource(micStream);
-      const gain = audioCtx.createGain(); gain.gain.value = 1.5;
-      micSource.connect(gain); gain.connect(destination);
+      
+      // Boost mic gain slightly for clarity alongside tab stream
+      const gain = audioCtx.createGain(); 
+      gain.gain.value = 1.5;
+      micSource.connect(gain); 
+      gain.connect(destination);
 
       audioStream = destination.stream;
+      
+      // If user stops sharing within Chrome's native UI bar
       tabAudioTrack.onended = stopRecording;
 
-      // Sync state to React via storage
+      // 3. Sync state to React via Background Storage
       chrome.storage.local.set({ 
         currentSession, 
         currentState: 'recording',
@@ -107,10 +126,20 @@ import styles from './src/styles/global.css?inline';
       setTimeout(recordChunk, 1000);
 
     } catch (err) {
-      console.error(err);
+      console.warn('NoteCraft Recording Cancelled/Failed:', err.message);
+      
+      // Full logical cleanup on failure or denial
+      if (micStream) micStream.getTracks().forEach(t => t.stop());
+      if (tabStream) tabStream.getTracks().forEach(t => t.stop());
+      if (audioCtx && audioCtx.state !== 'closed') audioCtx.close().catch(() => {});
+      
+      // Reset variables so subsequent attempts start fresh
       isRecording = false;
+      currentSession = null;
+      recordingStart = null;
+      
+      // Sync idle state so the React UI returns to "Start Recording" elegantly
       chrome.storage.local.set({ currentState: 'idle' });
-      alert(err.message);
     }
   }
 

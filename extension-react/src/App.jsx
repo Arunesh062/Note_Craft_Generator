@@ -167,7 +167,6 @@ const App = ({ mode = 'popup' }) => {
     } else {
       window.dispatchEvent(new CustomEvent('nc-start-recording'));
     }
-    setScreen('recording');
   };
 
   const handleStop = () => {
@@ -178,7 +177,6 @@ const App = ({ mode = 'popup' }) => {
     } else {
       window.dispatchEvent(new CustomEvent('nc-stop-recording'));
     }
-    setScreen('processing');
   };
 
   const handleDownload = () => {
