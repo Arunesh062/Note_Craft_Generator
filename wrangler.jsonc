@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "notecraftgenerator",
+  "compatibility_date": "2026-05-20",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "extension-react"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
